@@ -5,61 +5,74 @@ from google_trans_new import google_translator
 import cv2
 
 
-IMAGE_PATH = './assets/test.jpg'
+def ocr(image, language_origin):
+    reader = easyocr.Reader([language_origin])
 
-IMAGE_EXTENSION = '.jpg'
-
-LANGUAGE_ORIGIN = 'en'
-
-LANGUAGE_TARGET = 'pt'
+    return reader.readtext(image)
 
 
-# OCR
-reader = easyocr.Reader([LANGUAGE_ORIGIN], gpu=True)
+def translate(text, language_origin, language_target):
+    translator = google_translator()
 
-result = reader.readtext(IMAGE_PATH, paragraph=False)
-
-
-# Translation
-translator = google_translator()
-
-
-def translate(text):
-    translate_text = translator.translate(
+    return translator.translate(
         text,
-        lang_src=LANGUAGE_ORIGIN,
-        lang_tgt=LANGUAGE_TARGET,
-		pronounce=False
+        lang_src=language_origin,
+        lang_tgt=language_target,
     )
 
-    return translate_text
+
+def photoshop(image, image_ocr, language_origin, language_target):
+    for sentence in reversed(image_ocr):
+        boxes, text, confident = sentence
+
+        cv2.rectangle(
+            image,
+            tuple(boxes[0]),
+            (boxes[1][0], boxes[2][1]),
+            (255, 255, 255),
+            -1,
+        )
+
+        translate_text = translate(text, language_origin, language_target)
+
+        box_text = (
+            translate_text
+            if isinstance(translate_text, str) else
+            translate_text[0]
+        ).lower()
+
+        cv2.putText(
+            image,
+            box_text,
+            (boxes[0][0], boxes[2][1]),
+            cv2.FONT_HERSHEY_COMPLEX_SMALL,  # FONT_HERSHEY_SIMPLEX
+            1,
+            (0, 0, 0),
+            2
+        )
+
+    return image
 
 
-# Image
-image = cv2.imread(IMAGE_PATH)
+if __name__ == '__main__':
+    image = cv2.imread('./assets/test.jpg')
 
-for sentence in reversed(result):
-    boxes, text, confident = sentence
+    language_origin = 'en'
 
-    cv2.rectangle(
-        image,  # Source image
-        tuple(boxes[0]),  # Upper left corner vertex
-        (boxes[1][0], boxes[2][1]),  # Lower right corner vertex
-        (255, 255, 255),  # Color
-        -1,
+    language_target = 'pt'
+
+    image_ocr = ocr(
+        image=image,
+        language_origin=language_origin,
     )
 
-    translate_text = translate(text)
-
-    cv2.putText(
-        image,  # Source image
-        (translate_text if isinstance(translate_text, str) else translate_text[0]).lower(),  # Text
-        # tuple(boxes[3]),  # Lower left corner vertex
-        (boxes[0][0], boxes[2][1]),  # Lower left corner vertex
-        cv2.FONT_HERSHEY_DUPLEX,  # Font codeyarns.com/tech/2015-03-11-fonts-in-opencv.html
-        1,  # Font scale
-        (0, 0, 0),  # Color
-        2  # Line type
+    image_photoshop = photoshop(
+        image=image,
+        image_ocr=image_ocr,
+        language_origin=language_origin,
+        language_target=language_target
     )
 
-cv2.imwrite(f'./assets/result{IMAGE_EXTENSION}', image)
+    cv2.imwrite(f'./assets/result.jpg', image_photoshop)
+
+    # To do: send image as byte to OCR and photoshop, check for OCR text typo, improve the text font, text box size and position, fix the paragraphs in the OCR
