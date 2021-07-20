@@ -4,6 +4,10 @@
 # Environment
 venv
 
+# Assets
+assets/images/*
+!assets/images/.gitkeep
+
 # Cache
 __pycache__
 cache_dir
