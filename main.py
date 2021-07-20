@@ -2,7 +2,22 @@ import easyocr
 
 from google_trans_new import google_translator
 
+from transformers import AutoTokenizer, AutoModelWithLMHead, AutoModelForCausalLM
+
+import torch
+
 import cv2
+
+
+translator = google_translator()
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+tokenizer = AutoTokenizer.from_pretrained('salesken/grammar_correction')
+
+model = AutoModelForCausalLM.from_pretrained(
+    'salesken/grammar_correction'
+).to(device)
 
 
 def ocr(image, language_origin):
@@ -12,13 +27,30 @@ def ocr(image, language_origin):
 
 
 def translate(text, language_origin, language_target):
-    translator = google_translator()
-
     return translator.translate(
         text,
         lang_src=language_origin,
         lang_tgt=language_target,
     )
+
+
+def grammar_correction(text):
+    query = "<|startoftext|> " + text  # '~~~'
+
+    input_ids = tokenizer.encode(query.lower(), return_tensors='pt').to(device)
+
+    sample_output = model.generate(
+        input_ids,
+        do_sample=True,
+        num_beams=1,
+        max_length=128,
+        temperature=0.9,
+        top_p=0.85,
+        top_k=5,
+        num_return_sequences=1
+    )
+
+    return tokenizer.decode(sample_output[0], skip_special_tokens=True).split('||')[0].split('~~~')[1]
 
 
 def photoshop(image, image_ocr, language_origin, language_target):
