@@ -2,7 +2,7 @@ import easyocr
 
 from google_trans_new import google_translator
 
-from transformers import AutoTokenizer, AutoModelWithLMHead, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 import torch
 
@@ -20,10 +20,10 @@ model = AutoModelForCausalLM.from_pretrained(
 ).to(device)
 
 
-def ocr(image, language_origin):
+def ocr(image, language_origin, paragraph):
     reader = easyocr.Reader([language_origin])
 
-    return reader.readtext(image)
+    return reader.readtext(image, paragraph=paragraph)
 
 
 def translate(text, language_origin, language_target):
@@ -53,9 +53,9 @@ def grammar_correction(text):
     return tokenizer.decode(sample_output[0], skip_special_tokens=True).split('||')[0].split('~~~')[1]
 
 
-def photoshop(image, image_ocr, language_origin, language_target):
+def photoshop(image, image_ocr, language_origin, paragraph, language_target):
     for sentence in reversed(image_ocr):
-        boxes, text, confident = sentence
+        boxes, text, confident = [*sentence, None] if paragraph else sentence
 
         cv2.rectangle(
             image,
@@ -71,7 +71,9 @@ def photoshop(image, image_ocr, language_origin, language_target):
             translate_text
             if isinstance(translate_text, str) else
             translate_text[0]
-        ).lower()
+        ).capitalize()
+
+        print(box_text)
 
         cv2.putText(
             image,
@@ -93,18 +95,20 @@ if __name__ == '__main__':
 
     language_target = 'pt'
 
+    paragraph = True
+
     image_ocr = ocr(
         image=image,
         language_origin=language_origin,
+        paragraph=paragraph
     )
 
     image_photoshop = photoshop(
         image=image,
         image_ocr=image_ocr,
         language_origin=language_origin,
+        paragraph=paragraph,
         language_target=language_target
     )
 
     cv2.imwrite(f'./assets/result.jpg', image_photoshop)
-
-    # To do: send image as byte to OCR and photoshop, check for OCR text typo, improve the text font, text box size and position, fix the paragraphs in the OCR
