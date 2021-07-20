@@ -2,6 +2,8 @@ import easyocr
 
 from google_trans_new import google_translator
 
+from itertools import zip_longest
+
 import cv2
 
 
@@ -20,6 +22,12 @@ def translate(text, language_origin, language_target):
         lang_src=language_origin,
         lang_tgt=language_target,
     )
+
+
+def grouper(iterable, group_size):
+    args = [iter(iterable)] * group_size
+
+    return zip_longest(*args)
 
 
 def photoshop(image, image_ocr, language_origin, paragraph, language_target):
@@ -43,15 +51,24 @@ def photoshop(image, image_ocr, language_origin, paragraph, language_target):
             translate_text[0]
         ).capitalize()
 
-        cv2.putText(
-            image,
-            box_text,
-            (boxes[0][0], boxes[2][1]),
-            cv2.FONT_HERSHEY_COMPLEX_SMALL,  # FONT_HERSHEY_SIMPLEX
-            1,
-            (0, 0, 0),
-            2
-        )
+        box_text_groups = list(grouper(box_text.split(), 3))
+
+        x = boxes[0][0] - 20
+
+        y = boxes[2][1] - 60
+
+        for box_text_group in box_text_groups:
+            cv2.putText(
+                image,
+                ' '.join(filter(lambda word: word, box_text_group)),
+                (x, y),
+                cv2.FONT_HERSHEY_COMPLEX_SMALL,  # FONT_HERSHEY_SIMPLEX
+                1,
+                (0, 0, 0),
+                2
+            )
+
+            y += 30
 
     return image
 
