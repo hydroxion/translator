@@ -50,6 +50,10 @@ Execute the script.
 python3 main.py
 ```
 
+## Documentation
+
+The dependencies used where choose once they provide the possibility of a free platform, which is not the case if the best OCR and translation from AWS, GCP, Azure, etc, are used.
+
 ## Contributing
 
 Pull requests are welcome. Please, consider the following.
