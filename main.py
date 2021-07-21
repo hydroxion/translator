@@ -3,7 +3,7 @@ from source.scripts.image import ocr, photoshop
 import cv2
 
 
-image = cv2.imread('./assets/images/test.jpg')
+image = cv2.imread('./assets/images/test 0.jpg')
 
 language_origin = 'en'
 
