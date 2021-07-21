@@ -13,7 +13,7 @@ def ocr(image, language_origin, paragraph):
     return reader.readtext(image, paragraph=paragraph)
 
 
-def photoshop(image, image_ocr, paragraph, language_target, group_size):
+def photoshop(image, image_ocr, language_origin, paragraph, language_target, group_size):
     for sentence in image_ocr:
         boxes, text, confident = [*sentence, None] if paragraph else sentence
 
@@ -25,7 +25,7 @@ def photoshop(image, image_ocr, paragraph, language_target, group_size):
             -1,
         )
 
-        translated_text = translate(text, language_target)
+        translated_text = translate(text, language_origin, language_target)
 
         box_text = (
             translated_text
@@ -35,9 +35,9 @@ def photoshop(image, image_ocr, paragraph, language_target, group_size):
 
         box_text_groups = list(grouper(box_text.split(), group_size))
 
-        x = boxes[0][0] # - 20
+        x = boxes[0][0] - 30
 
-        y = boxes[2][1] # - 60
+        y = boxes[2][1] - 60
 
         for box_text_group in box_text_groups:
             cv2.putText(
@@ -47,7 +47,7 @@ def photoshop(image, image_ocr, paragraph, language_target, group_size):
                 cv2.FONT_HERSHEY_COMPLEX_SMALL,  # FONT_HERSHEY_SIMPLEX
                 .75,
                 (0, 0, 0),
-                1
+                2
             )
 
             y += 30

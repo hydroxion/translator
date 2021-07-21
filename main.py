@@ -3,7 +3,7 @@ from source.scripts.image import ocr, photoshop
 import cv2
 
 
-image = cv2.imread('./assets/images/test 0.jpg')
+image = cv2.imread('./assets/images/test/test_0.jpg')
 
 language_origin = 'en'
 
@@ -26,4 +26,4 @@ image_photoshop = photoshop(
     group_size=2
 )
 
-cv2.imwrite(f'./assets/images/result.jpg', image_photoshop)
+cv2.imwrite(f'./assets/images/test/result.jpg', image_photoshop)

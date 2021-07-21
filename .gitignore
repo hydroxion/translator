@@ -5,8 +5,7 @@
 venv
 
 # Assets
-assets/images/*
-!assets/images/.gitkeep
+assets/images/test/result.jpg
 
 # Cache
 __pycache__
