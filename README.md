@@ -28,7 +28,7 @@ Use the Python 3 CLI to create a virtual environment.
 python3 -m venv venv
 ```
 
-Activate the virtual environment.
+Activate the virtual estartnvironment.
 
 ```sh
 source ./venv/bin/activate
@@ -64,4 +64,4 @@ Pull requests are welcome. Please, consider the following.
 
 ## License
 
-[GNU Affero General Public License v3.0](./LICENSE.md)
+[MIT](./LICENSE.md)
